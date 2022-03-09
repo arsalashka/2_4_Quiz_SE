@@ -20,41 +20,34 @@ class ResultViewController: UIViewController {
         super.viewDidLoad()
 
 		navigationItem.hidesBackButton = true
-		whichAnimal = getAnimal(from: answers)
-		youAreLabel.text = "Вы - \(whichAnimal.rawValue)"
-		definitionLabel.text = whichAnimal.definition
+		getAnimal(from: answers)
+
     }
 }
 
 // MARK: - Private methods
 extension ResultViewController {
-	
-	private func animalCounter(for animal: Animal, in answers: [Answer]) -> Int {
-		var count = 0
+	private func getAnimal(from answers: [Answer]) {
 
-		for answer in answers {
-			if answer.animal == animal {
-				count += 1
+		var frequencyOfAnimal: [Animal: Int] = [:]
+		let animals = answers.map { $0.animal }
+
+		for animal in animals {
+			if let animalTypeCount = frequencyOfAnimal[animal] {
+				frequencyOfAnimal.updateValue(animalTypeCount + 1, forKey: animal)
+			} else {
+				frequencyOfAnimal[animal] = 1
 			}
 		}
-		return count
+
+		let sortedFrequencyOfAnimals = frequencyOfAnimal.sorted { $0.value > $1.value }
+		guard let mostFrequencyAnimal = sortedFrequencyOfAnimals.first?.key else { return }
+
+		updateUI(with: mostFrequencyAnimal)
 	}
 
-	private func getAnimal(from answers: [Answer]) -> Animal {
-
-		let dogs = animalCounter(for: .dog, in: answers)
-		let cats = animalCounter(for: .cat, in: answers)
-		let rabbits = animalCounter(for: .rabbit, in: answers)
-		let turtles = animalCounter(for: .turtle, in: answers)
-
-		let max = max(dogs, cats, rabbits, turtles)
-		if max == dogs {
-			return .dog
-		} else if max == cats {
-			return .cat
-		} else if max == rabbits {
-			return .rabbit
-		}
-		return .turtle
+	private func updateUI(with animal: Animal) {
+		youAreLabel.text = "Вы - \(animal.rawValue)"
+		definitionLabel.text = animal.definition
 	}
 }
